@@ -94,11 +94,6 @@ app.post("/login", (req, res) => {
   res.cookie('username', req.body.username)
   res.redirect("/urls")
   // console.log(username)
-  const templateVars = {
-    username: req.cookies["username"],
-    // ... any other vars
-  };
-  res.render("urls_index", templateVars);
   })
 
 app.post("/logout", (req, res) => {
