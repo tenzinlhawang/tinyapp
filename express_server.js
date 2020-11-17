@@ -58,8 +58,8 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   
-  const templateVars = { user: users[req.session.user_id['user_id']]};
   if(req.session.user_id) {
+    const templateVars = { user: users[req.session.user_id['user_id']]};
   res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -99,7 +99,7 @@ app.post('/urls/:shortURL', (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -127,11 +127,17 @@ app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let user = getUserByEmail(req.body.email, users);
-  
-  if (user && bcrypt.compareSync(password, user.password)) {
-    req.session.user_id = user.id;
+  if (req.body.email === '' || req.body.password === '') {
+    res.send('Error 400 status code - Cannot leave email or password empty');
   }
-  res.redirect("/urls")
+  // check for empty email/password (if statement whethere email and password empty strings) res.send("error 400 - Fill out empty fields")
+  
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    res.send("User doesnt exist")
+  } else{
+    req.session.user_id = user.id;
+    res.redirect("/urls")
+  }
   })
 
 //**************************************** LOGOUT USER ************************************************************//
@@ -153,10 +159,10 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
-    res.send('Error 400 status code - Cannot leave email or password empty');
+    return res.send('Error 400 status code - Cannot leave email or password empty');
   }
   if (getUserByEmail(req.body.email, users)) {
-    res.send("Error 400 - Email already exists in database")
+    return res.send("Error 400 - Email already exists in database")
   }
   let newUserID = generateRandomString(6); 
   let hashedPassword = bcrypt.hashSync(req.body.password, 10);
