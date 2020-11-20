@@ -59,7 +59,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls/new", (req, res) => {
   
   if(req.session.user_id) {
-    const templateVars = { user: users[req.session.user_id['user_id']]};
+    const templateVars = { user: users[req.session['user_id']]};
   res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -87,15 +87,24 @@ app.post("/urls", (req, res) => {
 //**************************************** SHORT URL ************************************************************//
 
 app.get("/urls/:shortURL", (req, res) => {
- 
+  if (req.session.user_id) {
   let shortURL = req.params.shortURL;
   const templateVars = { user: users[req.session.user_id], shortURL, longURL: urlDatabase[shortURL].longURL };
-  res.render("urls_show", templateVars);
+  res.render("urls_show", templateVars)
+  }
+  else if (!req.session.user_id) {
+    //res.redirect("/login");
+    res.send("You do not have access !!!")
+  }
 });
 
 app.post('/urls/:shortURL', (req, res) => {
+  if (req.session.user_id && req.session.user_id === urlDatabase[req.params.shortURL].userID) {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.shortURL}`)
+  } else {
+    res.send("Unauthorized access");
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -111,6 +120,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect("/urls")
   } else {
     res.redirect("/login");
+    
   }
 });
 
