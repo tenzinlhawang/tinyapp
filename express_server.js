@@ -99,9 +99,12 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post('/urls/:shortURL', (req, res) => {
-  if (req.session.user_id && req.session.user_id === urlDatabase[req.params.shortURL].userID) {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  res.redirect(`/urls/${req.params.shortURL}`)
+  let userId = req.session.user_id;
+  let shortUrl = req.params.shortURL;
+  let longUrl = req.body.longURL;
+  if (userId && userId === urlDatabase[shortUrl].userID) {
+  urlDatabase[shortUrl].longURL = longURL;
+  res.redirect(`/urls/${shortUrl}`);
   } else {
     res.send("Unauthorized access");
   }
@@ -109,6 +112,7 @@ app.post('/urls/:shortURL', (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
+
   res.redirect(longURL);
 });
 
